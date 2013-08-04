@@ -23,10 +23,11 @@
             max_age: MAX_AGE,
             fade_rate: FADE_RATE,
             border: BORDER,
-            velocity: to_px(rotate(Math.PI/4, double_spiral(spiral(1/2, Math.PI/6))))
+//            velocity: to_px(julia(-0.4, 0.6))
+            velocity: to_px(10, julia(0, 10))
         });
     
-    cx.strokeStyle = "rgba(255,255,255,0.5)";
+    cx.strokeStyle = "rgba(255,255,255,0.1)";
     cx.fillStyle = "rgba(255,255,255,0.05)";
     cx.fillRect(0, 0, canvas.width, canvas.height);
     streamer.start();
@@ -65,13 +66,18 @@
     }
     
     // Transform a vector field from origin-centred coordinates to pixel coords
-    function to_px(f) {
+    function to_px(n, f) {
         return function(x_px, y_px, t) {
-            var divisor = Math.min(canvas.width, canvas.height)/4,
+            var divisor = Math.min(canvas.width, canvas.height)/n,
                 x = (x_px - canvas.width/2) / divisor,
                 y = (y_px - canvas.height/2) / divisor;
             
-            return f(x, y, t);
+            var v = f(x, y, t);
+            return v;
+            // return [
+            //     v[0] * divisor,
+            //     v[1] * divisor
+            // ];
         };
     }
     
@@ -88,6 +94,14 @@
         };
     }
     
+    function julia(dx, dy) {
+        return function(x, y, t) {
+            return [
+                (x*x - y*y + dx - x),
+               ( 2*x*y + dy - y)
+            ];
+        }
+    }
     
     
 </script>

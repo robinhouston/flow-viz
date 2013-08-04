@@ -26,12 +26,13 @@ function Streamer(options) {
     function initStreams() {
         var streams = [];
     
-        for (var i=0; i<num_streams; i++)
+        for (var i=0; i<num_streams; i++) {
+            var x = Math.round(Math.random() * (w + 2*border)) - border,
+                y = Math.round(Math.random() * (h + 2*border)) - border;
             streams.push([
-                Math.round(Math.random() * (w + 2*border)) - border,
-                Math.round(Math.random() * (h + 2*border)) - border,
-                Math.round(Math.random() * max_age) + 1
+                x, y, Math.round(Math.random() * max_age) + 1, x, y
             ]);
+        }
     
         return streams;
     }
@@ -45,19 +46,21 @@ function Streamer(options) {
         for (var i=0; i<streams.length; i++) {
             var stream = streams[i];
             if (stream[2] == 0) {
-                stream[0] = Math.round(Math.random() * (w + 2*border)) - border;
-                stream[1] = Math.round(Math.random() * (h + 2*border)) - border;
+                stream[0] = stream[3];
+                stream[1] = stream[4];
                 stream[2] = MAX_AGE;
             }
             
             var v = velocity(stream[0], stream[1], t);
-            cx.beginPath();
-            cx.moveTo(stream[0], stream[1]);
-            cx.lineTo(stream[0] + v[0], stream[1] + v[1]);
-            cx.stroke();
+            if (v[0] <= w && v[1] <= h) {
+                cx.beginPath();
+                cx.moveTo(stream[0], stream[1]);
+                cx.lineTo(stream[0] + v[0], stream[1] + v[1]);
+                cx.stroke();
             
-            stream[0] += v[0];
-            stream[1] += v[1];
+                stream[0] += v[0];
+                stream[1] += v[1];
+            }
             stream[2]--;
         }
         
