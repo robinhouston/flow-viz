@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Spiral flow</title>
+<script src="http://bl.ocks.org/robinhouston/raw/6096562/rAF.js" charset="utf-8"></script>
+<script src="streamer.js" charset="utf-8"></script>
+<style>
+    canvas { background-color: #4C4C4C; }
+</style>
+
+<canvas width=500 height=500></canvas>
+
+<script>
+    var MS_PER_REPEAT = 1000,
+        NUM_STREAMS = 8000,
+        MAX_AGE = 40,
+        FADE_RATE = 0.05,
+        JITTER = 0.6;
+  
+    var canvas = document.getElementsByTagName("canvas")[0],
+        cx = canvas.getContext("2d"),
+        streamer = Streamer({
+            canvas: canvas,
+            ms_per_repeat: MS_PER_REPEAT,
+            num_streams: NUM_STREAMS,
+            max_age: MAX_AGE,
+            fade_rate: FADE_RATE,
+            velocity: spiral(1/2, Math.PI/6)
+        });
+    
+    cx.strokeStyle = "rgba(255,255,255,0.5)";
+    cx.fillStyle = "rgba(255,255,255,0.05)";
+    cx.fillRect(0, 0, canvas.width, canvas.height);
+    streamer.start();
+    
+    function anticlockwise_circle(x, y, t) {
+        return [
+            (y - canvas.height/2)/100 + Math.random()*JITTER*2-JITTER,
+            (canvas.width/2 - x) /100  + Math.random()*JITTER*2-JITTER
+        ];
+    }
+
+    function spiral(r, theta) {
+        var log_r = Math.log(r);
+        return function (x, y, t) {
+            var rr = Math.min(canvas.width, canvas.height)/16,
+                xx = (x - canvas.width/2) / rr,
+                yy = (y - canvas.height/2) / rr;
+            return [
+                xx*log_r - yy*theta,
+                xx*theta + yy*log_r
+            ];
+        };
+    }
+    
+    
+</script>
