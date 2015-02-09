@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Flux</title>
+<script src="http://bl.ocks.org/robinhouston/raw/6096562/rAF.js" charset="utf-8"></script>
+<script src="streamer.js" charset="utf-8"></script>
+<style>
+    canvas { background-color: #4C4C4C; }
+</style>
+
+<canvas width=960 height=500></canvas>
+
+<script>
+    var NUM_STREAMS = 16000,
+        MAX_AGE = 30,
+        FADE_RATE = 0.8,
+        BORDER = 100;
+  
+    var canvas = document.getElementsByTagName("canvas")[0],
+        cx = canvas.getContext("2d"),
+        streamer = Streamer({
+            canvas: canvas,
+            num_streams: NUM_STREAMS,
+            max_age: MAX_AGE,
+            fade_rate: FADE_RATE,
+            border: BORDER,
+            randomPoint: fluxDensity,
+            velocity: flux
+        });
+    
+    cx.strokeStyle = "rgba(255,255,255,0.6)";
+    cx.fillStyle = "rgba(255,255,255,0.05)";
+    cx.fillRect(0, 0, canvas.width, canvas.height);
+    streamer.start();
+    
+    // * Vector field transformers
+    
+    // Rotate the vector field by θ
+    function rotate(θ, f) {
+        var cos_θ = Math.cos(θ), sin_θ = Math.sin(θ);
+        return function(x, y, t) {
+            return f(x*cos_θ - y*sin_θ, x*sin_θ + y*cos_θ, t);
+        };
+    }
+    
+    // Transform the vector field f under the mobius transformation z ↦ (z-1)/(z+1)
+    function double_spiral(f) {
+        return function(x, y, t) {
+            // Let (x0, y0) be the inverse image of (x, y) ...
+            var r0 = (x-1)*(x-1) + y*y,
+                x0 = (1 - x*x - y*y) / r0,
+                y0 = 2*y / r0,
+            
+            // Find the velocity v0 at (x0, y0)
+                v0 = f(x0, y0, t),
+                vx = v0[0], vy = v0[1];
+            
+            // and hit v0 with the Jacobian at (x0, y0)
+            var denom = Math.pow((x0+1)*(x0+1) + y0*y0, 2) / 4,
+                a = 2 * (y0*y0 - (x0+1)*(x0+1)),
+                b = 4*(x0+1)*y0;
+            return [
+                ( a * vx - b * vy ) / denom,
+                ( b * vx + a * vy ) / denom
+            ];
+        };
+    }
+    
+    // Transform a (vector / scalar) field from origin-centred coordinates to pixel coords
+    function to_px(n, f) {
+        return function(x_px, y_px, t) {
+            var divisor = Math.min(canvas.width, canvas.height)/n,
+                x = (x_px - canvas.width/2) / divisor,
+                y = (y_px - canvas.height/2) / divisor;
+            
+            return f(x, y, t);
+        };
+    }
+    
+    
+    // * Primitive vector fields
+    
+    function spiral(r, theta) {
+        var log_r = Math.log(r);
+        return function (x, y, t) {
+            return [
+                x*log_r - y*theta,
+                x*theta + y*log_r
+            ];
+        };
+    }
+    
+    function julia(dx, dy) {
+        return function(x, y, t) {
+            return [
+                (x*x - y*y + dx - x),
+               ( 2*x*y + dy - y)
+            ];
+        }
+    }
+    
+    var minX = +Infinity, maxX = -Infinity;
+    function flux(x, y) {
+        return [ 0, (x / canvas.width + 0.1) * 9 ];
+    }
+    
+    function fluxDensity(w, h, border) {
+        return function() {
+            var r = Math.random(),
+                x = Math.round(0.1 * (Math.pow(11, r) - 1) * (w + 2*border)) - border,
+                y = Math.round(Math.random() * (h + 2*border)) - border;
+            return [ x, y ];
+        };
+    }
+    
+</script>

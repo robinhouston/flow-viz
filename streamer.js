@@ -11,7 +11,17 @@ function Streamer(options) {
         max_age = options.max_age || 10,
         fade_rate = options.fade_rate || 0.02,
         border = options.border || 100,
-        velocity = options.velocity;
+        velocity = options.velocity,
+        randomPoint = (options.randomPoint || uniformlyRandomPoint)(w, h, border);
+
+    function uniformlyRandomPoint(w, h, border) {
+        console.log("w = " + w + ", h = " + h + ", border = " + border);
+        return function() {
+            var x = Math.round(Math.random() * (w + 2*border)) - border,
+                y = Math.round(Math.random() * (h + 2*border)) - border;
+            return [ x, y ];
+        };
+    }
 
     function fadeCanvas(alpha) {
         cx.save();
@@ -27,10 +37,9 @@ function Streamer(options) {
         var streams = [];
     
         for (var i=0; i<num_streams; i++) {
-            var x = Math.round(Math.random() * (w + 2*border)) - border,
-                y = Math.round(Math.random() * (h + 2*border)) - border;
+            var p = randomPoint();
             streams.push([
-                x, y, Math.round(Math.random() * max_age) + 1, x, y
+                p[0], p[1], Math.round(Math.random() * max_age) + 1, p[0], p[1]
             ]);
         }
     
