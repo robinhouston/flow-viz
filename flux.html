@@ -4,7 +4,8 @@
 <script src="http://bl.ocks.org/robinhouston/raw/6096562/rAF.js" charset="utf-8"></script>
 <script src="streamer.js" charset="utf-8"></script>
 <style>
-    canvas { background-color: #4C4C4C; }
+    html, body { margin: 0; }
+    canvas { background-color: #4C4C4C; margin: 8px; }
 </style>
 
 <canvas width=960 height=500></canvas>
@@ -16,8 +17,12 @@
         BORDER = 100;
   
     var canvas = document.getElementsByTagName("canvas")[0],
-        cx = canvas.getContext("2d"),
-        streamer = Streamer({
+        cx = canvas.getContext("2d");
+    
+    canvas.width = window.innerWidth - 16;
+    canvas.height = window.innerHeight - 16;
+    
+    var streamer = Streamer({
             canvas: canvas,
             num_streams: NUM_STREAMS,
             max_age: MAX_AGE,
